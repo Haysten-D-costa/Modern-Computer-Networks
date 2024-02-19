@@ -59,7 +59,7 @@ void CRC_Receiver(int dividend[MAX], int divisor[MAX], int m, int n) {
         for(int i=0; i<m-n+1; i++) {
             cout << dividend[i];
         }
-    } else { cout << "Received CodeWord contains error !"; }
+    } else { cout << "\nReceived CodeWord contains error !\nRetransmit codeword again !!"; }
 }
 
 int main() {
