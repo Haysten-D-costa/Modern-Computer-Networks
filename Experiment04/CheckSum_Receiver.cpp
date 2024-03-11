@@ -1,69 +1,76 @@
 #include <iostream>
-#include <vector>
-#define MAX 30
+#include <cstring>
+#define SEG_LEN 8
 using namespace std;
 
-vector<int> addBinary(const vector<int>& num1, const vector<int>& num2, int size)
+void invert(string &a) {
+    for(int i=0; i<SEG_LEN; i++) {
+        a[i] = (a[i] == '0')? '1' : '0';
+    }
+}
+char add(char bitA, char bitB, char& carry)
 {
-    int carry = 0;
-    int bitA, bitB;
-    vector<int> result(size, 0);
-    vector<int> one(size, 0);
-
-    for(int i=size-1; i>=0; i--)
-    {
-        bitA = num1[i];
-        bitB = num2[i];
-        int sum = bitA + bitB + carry;
-
-        if(sum == 0) {
-            result[i] = 0;
+    if(carry == '1') {
+        if(bitB == '1' && bitA == '1') {
+            carry = '1';
+            return '1';
         }
-        else if(sum == 1) {
-            result[i] = 1;
-            carry = 0;
+        else if(bitA == '0' && bitB == '0') {
+            carry = '0';
+            return '1';
         }
-        else if(sum == 2) {
-            result[i] = 0;
-            carry = 1;
+        else if(bitA != bitB) {
+            carry = '1';
+            return '0';
         }
-        else if(sum == 3) {
-            result[i] = 1;
-            carry = 1;
+    } else {
+        if(bitB == '1' && bitA == '1') {
+            carry = '1';
+            return '0';
+        }
+        else if(bitA == '0' && bitB == '0') {
+            carry = '0';
+            return '0';
+        }
+        else {
+            carry = '0';
+            return '1';
         }
     }
-    if(carry == 1) {
-        for(int i=0; i<size; i++) {
-            if(i == size-1) {
-                one[i] = 1;
+}
+void addComplement(string &result, char carry, int n) {
+    for(int i=n-1; i>=0; i--) {
+        result[i] = add(result[i], '0', carry);
+    }
+}
+void checksum(string data) {
+    int n = SEG_LEN;
+    int m = data.length() / SEG_LEN;
+    string result = data.substr(0, SEG_LEN);
+    char carry = '0';
+
+    for(int j=1; j<=m-1; j++) {
+        string s = data.substr(j * SEG_LEN, SEG_LEN);
+        for(int i=n-1; i>=0; i--) 
+        {
+            result[i] = add(result[i], s[i], carry);
+            if(i == 0 && carry == '1') {
+                addComplement(result, carry, n);
             }
-            else { one[i] = 0; }
         }
-        result = addBinary(result, one, size);
+        carry = '0';
     }
-    return result;
+    invert(result);
+    cout << "\nData     : " << data << endl;
+    data += result;
+    cout << "Checksum : " << result << endl;
+    cout << "Codeword : " << data;
 }
 
 int main() {
-
-    int segSize = 8;
-
-    vector<int> seg1 = {1, 0, 1, 1, 0, 0, 1, 1};
-    vector<int> seg2 = {1, 0, 1, 0, 1, 0, 1, 1};
-    vector<int> seg3 = {0, 1, 0, 1, 1, 0, 1, 0};
-    vector<int> seg4 = {1, 1, 0, 1, 0, 1, 0, 1};
-
-    vector<int> result = addBinary(addBinary(seg1, seg2, segSize), addBinary(seg3, seg4, segSize), segSize);
-
-    for(int i=0; i<segSize; i++) {
-        if(result[i] == 1) { result[i] = 0; }
-        else { result[i] = 1; }
-    }
-    cout << "Result : ";
-    for(int bit : seg1) { cout << bit << " "; }
-    for(int bit : seg2) { cout << bit << " "; }
-    for(int bit : seg3) { cout << bit << " "; }
-    for(int bit : seg4) { cout << bit << " "; }
-    for(int bit : result) { cout << bit << " "; }
+    string s;
+    cout << "Enter the data : ";
+    cin >> s;
+    checksum(s);
     return 0;
 }
