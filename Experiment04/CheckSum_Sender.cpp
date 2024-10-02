@@ -61,16 +61,11 @@ void checksum(string data) {
         carry = '0';
     }
     invert(result);
-    for(int i = 0; i < SEG_LEN; i++) {
-        if(result[i] == '1') {
-            cout << "\nError in the Data!";
-            return;
-        }
-    }
-    cout << "\nNo error in received data!\n";
-    cout << "Codeword : " << data;
-    data = data.substr(0, data.length() - SEG_LEN);
-    cout << "\nData : " << data<< endl;
+    cout << data << endl;
+    cout << result << endl;
+    
+    data += result;
+    cout << data;
 }
 
 int main() {

@@ -1,80 +1,71 @@
 #include <iostream>
-#include <string>
+#include <cstring>
+#define SEG_LEN 8
 using namespace std;
 
-// Function to convert a character representing a binary digit to an integer
-int str_to_int(char num) {
-    return num == '1' ? 1 : 0;
-}
-
-// Function to compute the 1's complement of a binary number
-string compliment(string num) {
-    string num_compliment = "";
-    for(int i=0; i<num.length(); i++) {
-        num_compliment = num[i] == '0' ? num_compliment + "1" : num_compliment + "0";
+void invert(string &a) {
+    for(int i=0; i<SEG_LEN; i++) {
+        a[i] = a[i] == '1' ? '0' : '1';
     }
-    return num_compliment;
 }
-
-// Function to perform binary addition of two binary numbers
-string binary_addition(string num1, string num2) {
-    int intsum, bitsum, carry = 0;
-    string sum = "";
-    for(int i=num1.length()-1; i>=0; i--) {
-        intsum = str_to_int(num1[i]) + str_to_int(num2[i]) + carry;
-        bitsum = intsum == 1 || intsum == 3 ? 1 : 0;
-        carry = intsum == 2 || intsum == 3 ? 1 : 0;
-        sum = to_string(bitsum) + sum;
-
-        if(i==0 && carry == 1) {
-            // Handling carry for the most significant bit
-            string strcarry = "1";
-            for (int i = 0; i < num1.length() - 1; i++) {
-                strcarry = "0" + strcarry;
-            }
-            sum = binary_addition(sum, strcarry);
+char add(char A, char B, char &carry) {
+    if(carry == '1') {
+        if(A=='1' && B=='1') {
+            carry = '1';
+            return '1';
+        } else if(A=='0' && B=='0') {
+            carry = '0';
+            return '1';
+        } else if(A!=B) {
+            carry = '1';
+            return '0';
+        }
+    } else {
+        if(A=='1' && B=='1') {
+            carry = '1';
+            return '0';
+        } else if(A=='0' && B=='0') {
+            carry = '0';
+            return '0';
+        } else {
+            carry = '0';
+            return '1';
         }
     }
-    return sum;
 }
+void addComplement(string &result, char carry, int n) {
+    for(int i=n-1; i>=0; i--) {
+        result[i] = add(result[i], '0', carry);
+    }
+}
+void checksum(string data) {
+    int n = SEG_LEN;
+    int m = data.length() / SEG_LEN;
+    string result = data.substr(0, SEG_LEN);
+    char carry = '0';
+
+    for(int i=1; i<=m-1; i++) {
+        string s = data.substr(i * SEG_LEN, SEG_LEN);
+        for(int j=n-1; j>=0; j--) {
+            result[j] = add(result[j], s[j], carry);
+            if(j==0 && carry=='1') {
+                addComplement(result, carry, n);
+            }
+        }
+        carry = '0';
+    }
+    invert(result);
+    cout << data << endl;
+    cout << result << endl;
+    
+    data += result;
+    cout << data;
+}
+
 
 int main() {
-    int segment_size;
     string data;
-    cout << "Enter the Data : ";
     cin >> data;
-
-    cout << "Enter the segment size : ";
-    cin >> segment_size;
-
-    // Split the data into segments
-    int n = data.length() / segment_size;
-    string segments[n+1];
-    for(int i=0; i<n; i++) {
-        segments[i] = data.substr(i*segment_size, segment_size);
-    }
-
-    // Perform binary addition on all the segments to calculate checksum
-    string sum = segments[0];
-    for(int i=1; i<n; i++) {
-        sum = binary_addition(sum, segments[i]);
-    }
-
-    cout << "Sum : " << sum << endl;
-
-    // Calculate 1's complement of the sum to get the checksum
-    string sum_compliment = compliment(sum);
-    segments[n] = sum_compliment;
-
-    cout << "checksum : " << sum_compliment << endl;
-
-    // Output the segments including the checksum
-    cout << "codeword : " ;
-    for(int i=0; i<n+1; i++) {
-        cout << segments[i] << " ";
-    }
+    checksum(data);
     return 0;
 }
-
-// 10110011 10101011 01011010 11010101
-// 10110011101010110101101011010101
